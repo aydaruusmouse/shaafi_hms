@@ -1,0 +1,22 @@
+<style>
+    /* Remove scroll from tabs */
+    .fi-tabs {
+        overflow: visible !important;
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+    }
+
+    /* Ensure the container doesn't cause scroll */
+    .fi-main {
+        overflow-x: hidden !important;
+        width: 100% !important;
+    }
+
+    /* Fix any potential overflow in parent containers */
+    .fi-main-ctn,
+    .fi-page,
+    .fi-page-content {
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+</style>

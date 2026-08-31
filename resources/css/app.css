@@ -1,0 +1,4 @@
+@import '../../public/web_front/css/selectize.min.css';
+@import '../../public/landing_front/css/front-third-party.css';
+@import '/node_modules/@fortawesome/fontawesome-free/css/all.min.css';
+@import '/node_modules/intl-tel-input/build/css/intlTelInput.css';

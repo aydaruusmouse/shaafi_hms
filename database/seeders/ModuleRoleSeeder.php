@@ -1,0 +1,358 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class ModuleRoleSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        if (DB::table('module_role')->exists()) {
+            return;
+        }
+
+        $permissionsData = [
+            'Admin' => [
+                'Odontograms' => ['view', 'edit', 'create', 'delete'],
+                'User' => ['view', 'edit', 'create', 'delete'],
+                'Patients' => ['view', 'edit', 'create', 'delete'],
+                'Doctors' => ['view', 'edit', 'create', 'delete'],
+                'Accountants' => ['view', 'edit', 'create', 'delete'],
+                'Nurses' => ['view', 'edit', 'create', 'delete'],
+                'Receptionists' => ['view', 'edit', 'create', 'delete'],
+                'Lab Technicians' => ['view', 'edit', 'create', 'delete'],
+                'Manual Billing Payments' => ['view', 'edit', 'create', 'delete'],
+                'Pharmacists' => ['view', 'edit', 'create', 'delete'],
+                'Birth Reports' => ['view', 'edit', 'create', 'delete'],
+                'Death Reports' => ['view', 'edit', 'create', 'delete'],
+                'Investigation Reports' => ['view', 'edit', 'create', 'delete'],
+                'Income' => ['view', 'edit', 'create', 'delete'],
+                'SMS' => ['view', 'edit', 'create', 'delete'],
+                'IPD Patients' => ['view', 'edit', 'create', 'delete'],
+                'OPD Patients' => ['view', 'edit', 'create', 'delete'],
+                'Accounts' => ['view', 'edit', 'create', 'delete'],
+                'Employee Payrolls' => ['view', 'edit', 'create', 'delete'],
+                'Invoices' => ['view'],
+                'Payments' => ['view', 'edit', 'create', 'delete'],
+                'Payment Reports' => ['view', 'edit', 'create', 'delete'],
+                'Advance Payments' => ['view', 'edit', 'create', 'delete'],
+                'Bills' => ['view', 'edit', 'create', 'delete'],
+                'Bed Types' => ['view', 'edit', 'create', 'delete'],
+                'Bed Assigns' => ['view', 'edit', 'create', 'delete'],
+                'Blood Banks' => ['view', 'edit', 'create', 'delete'],
+                'Blood Donors' => ['view', 'edit', 'create', 'delete'],
+                'Documents' => ['view', 'edit', 'create', 'delete'],
+                'Document Types' => ['view', 'edit', 'create', 'delete'],
+                'Services' => ['view', 'edit', 'create', 'delete'],
+                'Insurances' => ['view', 'edit', 'create', 'delete'],
+                'Packages' => ['view', 'edit', 'create', 'delete'],
+                'Ambulances' => ['view', 'edit', 'create', 'delete'],
+                'Ambulances Calls' => ['view', 'edit', 'create', 'delete'],
+                'Appointments' => ['view', 'edit'],
+                'Call Logs' => ['view', 'edit', 'create', 'delete'],
+                'Visitors' => ['view', 'edit', 'create', 'delete'],
+                'Postal Receive' => ['view', 'edit', 'create', 'delete'],
+                'Postal Dispatch' => ['view', 'edit', 'create', 'delete'],
+                'Notice Boards' => ['view', 'edit', 'create', 'delete'],
+                'Mail' => ['view', 'edit', 'create', 'delete'],
+                'Enquires' => ['view'],
+                'Items Categories' => ['view', 'edit', 'create', 'delete'],
+                'Items' => ['view', 'edit', 'create', 'delete'],
+                'Item Stocks' => ['view', 'edit', 'create', 'delete'],
+                'Issued Items' => ['view', 'edit', 'create', 'delete'],
+                'Pathology Categories' => ['view', 'edit', 'create', 'delete'],
+                'Pathology Tests' => ['view', 'edit', 'create', 'delete'],
+                'Doctor Suggested Tests' => ['view', 'edit', 'create', 'delete'],
+                'Lab Report Payments' => ['view', 'edit', 'create', 'delete'],
+                'Radiology Categories' => ['view', 'edit', 'create', 'delete'],
+                'Radiology Tests' => ['view', 'edit', 'create', 'delete'],
+                'Medicine Categories' => ['view', 'edit', 'create', 'delete'],
+                'Medicine Brands' => ['view', 'edit', 'create', 'delete'],
+                'Doctor Departments' => ['view', 'edit', 'create', 'delete'],
+                'Breaks' => ['view', 'edit', 'create', 'delete'],
+                'Schedules' => ['view', 'edit', 'create'],
+                'Prescriptions' => ['view', 'edit', 'create', 'delete'],
+                'Cases' => ['view', 'edit', 'create', 'delete'],
+                'Patient Cases' => ['view', 'edit', 'create', 'delete'],
+                'Testimonial' => ['view', 'edit', 'create', 'delete'],
+                'Blood Donations' => ['view', 'edit', 'create', 'delete'],
+                'Blood Issues' => ['view', 'edit', 'create', 'delete'],
+                'Live Consultations' => ['view', 'edit', 'create', 'delete'],
+                'Live Meetings' => ['view', 'edit', 'create', 'delete'],
+                'Pathology Units' => ['view', 'edit', 'create', 'delete'],
+                'Pathology Parameters' => ['view', 'edit', 'create', 'delete'],
+                'Medicines' => ['view', 'edit', 'create', 'delete'],
+                'Beds' => ['view', 'edit', 'create', 'delete'],
+                'Charge Categories' => ['view', 'edit', 'create', 'delete'],
+                'Charges' => ['view', 'edit', 'create', 'delete'],
+                'Doctor OPD Charges' => ['view', 'edit', 'create', 'delete'],
+                'Diagnosis Categories' => ['view', 'edit', 'create', 'delete'],
+                'Diagnosis Tests' => ['view', 'edit', 'create', 'delete'],
+                'Case Handlers' => ['view', 'edit', 'create', 'delete'],
+                'Patient Admissions' => ['view', 'edit', 'create', 'delete'],
+                'Vaccinations' => ['view', 'edit', 'create', 'delete'],
+                'Purchased Medicine' => ['view', 'edit', 'create', 'delete'],
+                'Appointment Transactions' => ['view'],
+                'Patient Queue' => ['view'],
+                'Vital Signs' => ['view', 'edit', 'create'],
+                'Doctor Holidays' => ['view', 'edit', 'create', 'delete'],
+                'Front CMS Services' => ['view', 'edit', 'create', 'delete'],
+                'CMS' => ['view', 'edit', 'create', 'delete'],
+                'Used Medicine' => ['view', 'delete'],
+                'Medicine Bills' => ['view', 'edit', 'create', 'delete'],
+                'Patient Smart Card Templates' => ['view', 'edit', 'create', 'delete'],
+                'General Settings' => ['edit'],
+                'Hospital Schedule' => ['edit'],
+                'Sidebar Settings' => ['edit'],
+                'Transactions' => ['view'],
+            ],
+            'Doctor' => [
+                'Odontograms' => ['view', 'edit', 'create', 'delete'],
+                'Patients' => ['view', 'edit', 'create', 'delete'],
+                'Doctors' => ['view'],
+                'Birth Reports' => ['view', 'edit', 'create', 'delete'],
+                'Death Reports' => ['view', 'edit', 'create', 'delete'],
+                'Investigation Reports' => ['view', 'edit', 'create', 'delete'],
+                'SMS' => ['view', 'edit', 'create', 'delete'],
+                'IPD Patients' => ['view', 'edit', 'create', 'delete'],
+                'OPD Patients' => ['view', 'edit', 'create', 'delete'],
+                'Invoices' => ['view', 'edit', 'create', 'delete'],
+                'Bed Assigns' => ['view', 'edit', 'create', 'delete'],
+                'Documents' => ['view', 'edit', 'create', 'delete'],
+                'Appointments' => ['view'],
+                'Live Meetings' => ['view', 'edit', 'create', 'delete'],
+                'Doctor Departments' => ['view'],
+                'Prescriptions' => ['view', 'edit', 'create', 'delete'],
+                'Live Consultations' => ['view', 'edit', 'create', 'delete'],
+                'Diagnosis Categories' => ['view', 'edit', 'create', 'delete'],
+                'Diagnosis Tests' => ['view', 'edit', 'create', 'delete'],
+                'Patient Admissions' => ['view', 'edit', 'create', 'delete'],
+                'Appointment Transactions' => ['view'],
+                'Patient Queue' => ['view'],
+                'Vital Signs' => ['view', 'edit', 'create'],
+            ],
+            'Nurse' => [
+                'Odontograms' => ['view', 'edit', 'create', 'delete'],
+                'IPD Patients' => ['view', 'edit', 'create', 'delete'],
+                'OPD Patients' => ['view', 'edit', 'create', 'delete'],
+                'Invoices' => ['view', 'edit', 'create', 'delete'],
+                'Bed Types' => ['view', 'edit', 'create', 'delete'],
+                'Bed Assigns' => ['view', 'edit', 'create', 'delete'],
+                'Beds' => ['view', 'edit', 'create', 'delete'],
+                'Live Meetings' => ['view'],
+            ],
+            'Receptionist' => [
+                'Odontograms' => ['view', 'edit', 'create', 'delete'],
+                'Patients' => ['view', 'edit', 'create', 'delete'],
+                'Doctors' => ['view', 'edit', 'create', 'delete'],
+                'SMS' => ['view', 'edit', 'create', 'delete'],
+                'IPD Patients' => ['view', 'edit', 'create', 'delete'],
+                'OPD Patients' => ['view', 'edit', 'create', 'delete'],
+                'Invoices' => ['view', 'edit', 'create', 'delete'],
+                'Bills' => ['view', 'edit', 'create', 'delete'],
+                'Services' => ['view', 'edit', 'create', 'delete'],
+                'Insurances' => ['view', 'edit', 'create', 'delete'],
+                'Packages' => ['view', 'edit', 'create', 'delete'],
+                'Ambulances' => ['view', 'edit', 'create', 'delete'],
+                'Ambulances Calls' => ['view', 'edit', 'create', 'delete'],
+                'Appointments' => ['view', 'edit', 'create', 'delete'],
+                'Call Logs' => ['view', 'edit', 'create', 'delete'],
+                'Visitors' => ['view', 'edit', 'create', 'delete'],
+                'Postal Receive' => ['view', 'edit', 'create', 'delete'],
+                'Postal Dispatch' => ['view', 'edit', 'create', 'delete'],
+                'Notice Boards' => ['view', 'edit', 'create', 'delete'],
+                'Mail' => ['view', 'edit', 'create', 'delete'],
+                'Enquires' => ['view'],
+                'Pathology Categories' => ['view', 'edit', 'create', 'delete'],
+                'Pathology Tests' => ['view', 'edit', 'create', 'delete'],
+                'Doctor Suggested Tests' => ['view', 'edit', 'create', 'delete'],
+                'Lab Report Payments' => ['view', 'edit', 'create', 'delete'],
+                'Radiology Categories' => ['view', 'edit', 'create', 'delete'],
+                'Radiology Tests' => ['view', 'edit', 'create', 'delete'],
+                'Cases' => ['view', 'edit', 'create', 'delete'],
+                'Patient Cases' => ['view', 'edit', 'create', 'delete'],
+                'Testimonial' => ['view', 'edit', 'create', 'delete'],
+                'Live Meetings' => ['view', 'edit', 'create', 'delete'],
+                'Pathology Units' => ['view', 'edit', 'create', 'delete'],
+                'Pathology Parameters' => ['view', 'edit', 'create', 'delete'],
+                'Charge Categories' => ['view', 'edit', 'create', 'delete'],
+                'Charges' => ['view', 'edit', 'create', 'delete'],
+                'Doctor OPD Charges' => ['view', 'edit', 'create', 'delete'],
+                'Diagnosis Categories' => ['view', 'edit', 'create', 'delete'],
+                'Diagnosis Tests' => ['view', 'edit', 'create', 'delete'],
+                'Case Handlers' => ['view', 'edit', 'create', 'delete'],
+                'Patient Admissions' => ['view', 'edit', 'create', 'delete'],
+                'Appointment Transactions' => ['view'],
+                'Patient Queue' => ['view'],
+                'Vital Signs' => ['view', 'edit', 'create'],
+                'Patient Smart Card Templates' => ['view', 'edit', 'create', 'delete'],
+            ],
+            'Patient' => [
+                'Odontograms' => ['view'],
+                'Patients' => ['view'],
+                'Birth Reports' => ['view'],
+                'Death Reports' => ['view'],
+                'Investigation Reports' => ['view'],
+                'IPD Patients' => ['view'],
+                'OPD Patients' => ['view'],
+                'Invoices' => ['view', 'edit', 'create', 'delete'],
+                'Documents' => ['view', 'edit', 'create', 'delete'],
+                'Appointments' => ['view', 'create', 'delete'],
+                'Prescriptions' => ['view'],
+                'Cases' => ['view'],
+                'Live Consultations' => ['view'],
+                'Medicines' => ['view'],
+                'Diagnosis Tests' => ['view'],
+                'Vaccinated Patients' => ['view'],
+                'Appointment Transactions' => ['view'],
+                'Doctors' => ['view'],
+            ],
+            'Case Manager' => [
+                'Doctors' => ['view'],
+                'Invoices' => ['view', 'edit', 'create', 'delete'],
+                'Ambulances' => ['view', 'edit', 'create', 'delete'],
+                'Ambulances Calls' => ['view', 'edit', 'create', 'delete'],
+                'Mail' => ['view', 'edit', 'create', 'delete'],
+                'Cases' => ['view', 'edit', 'create', 'delete'],
+                'Patient Cases' => ['view', 'edit', 'create', 'delete'],
+                'Live Meetings' => ['view'],
+                'Patient Admissions' => ['view', 'edit', 'create', 'delete'],
+            ],
+            'Pharmacist' => [
+                'Doctors' => ['view'],
+                'SMS' => ['view', 'edit', 'create', 'delete'],
+                'Invoices' => ['view', 'edit', 'create', 'delete'],
+                'Pathology Tests' => ['view', 'edit', 'create', 'delete'],
+                'Doctor Suggested Tests' => ['view', 'edit', 'create', 'delete'],
+                'Lab Report Payments' => ['view', 'edit', 'create', 'delete'],
+                'Radiology Tests' => ['view', 'edit', 'create', 'delete'],
+                'Medicine Categories' => ['view', 'edit', 'create', 'delete'],
+                'Medicine Brands' => ['view', 'edit', 'create', 'delete'],
+                'Prescriptions' => ['view'],
+                'Live Meetings' => ['view'],
+                'Medicines' => ['view', 'edit', 'create', 'delete'],
+                'Purchased Medicine' => ['view', 'edit', 'create', 'delete'],
+                'Used Medicine' => ['view', 'delete'],
+                'Medicine Bills' => ['view', 'edit', 'create', 'delete'],
+            ],
+            'Lab Technician' => [
+                'Doctors' => ['view'],
+                'Invoices' => ['view', 'edit', 'create', 'delete'],
+                'Blood Banks' => ['view', 'edit', 'create', 'delete'],
+                'Blood Donors' => ['view', 'edit', 'create', 'delete'],
+                'Pathology Tests' => ['view', 'edit', 'create', 'delete'],
+                'Doctor Suggested Tests' => ['view', 'edit', 'create', 'delete'],
+                'Lab Report Payments' => ['view', 'edit', 'create', 'delete'],
+                'Radiology Tests' => ['view', 'edit', 'create', 'delete'],
+                'Medicine Categories' => ['view', 'edit', 'create', 'delete'],
+                'Medicine Brands' => ['view', 'edit', 'create', 'delete'],
+                'Live Meetings' => ['view'],
+                'Medicines' => ['view', 'edit', 'create', 'delete'],
+                'Diagnosis Categories' => ['view', 'edit', 'create', 'delete'],
+                'Diagnosis Tests' => ['view', 'edit', 'create', 'delete'],
+                'Blood Donations' => ['view', 'edit', 'create', 'delete'],
+                'Blood Issues' => ['view', 'edit', 'create', 'delete'],
+                'Purchased Medicine' => ['view', 'edit', 'create', 'delete'],
+                'Used Medicine' => ['view', 'delete'],
+                'Medicine Bills' => ['view', 'edit', 'create', 'delete'],
+            ],
+            'Accountant' => [
+                'Income' => ['view', 'edit', 'create', 'delete'],
+                'SMS' => ['view', 'edit', 'create', 'delete'],
+                'Accounts' => ['view', 'edit', 'create', 'delete'],
+                'Employee Payrolls' => ['view', 'edit', 'create', 'delete'],
+                'Payments' => ['view', 'edit', 'create', 'delete'],
+                'Bills' => ['view', 'edit', 'create', 'delete'],
+                'Services' => ['view', 'edit', 'create', 'delete'],
+                'Live Meetings' => ['view'],
+            ],
+        ];
+
+        $ipdTabModules = [
+            'IPD Bills',
+            'IPD Charges',
+            'IPD Consultant Instruction',
+            'IPD Consultation',
+            'IPD Diagnosis',
+            'IPD Nurse Notes',
+            'IPD Operations',
+            'IPD Overview',
+            'IPD Payments',
+            'IPD Prescriptions',
+            'IPD Test Results',
+            'IPD Timelines',
+            'IPD Vital Information',
+            'IPD/OPD',
+        ];
+        $opdTabModules = [
+            'OPD Consultation',
+            'OPD Diagnosis',
+            'OPD Overview',
+            'OPD Prescriptions',
+            'OPD Test Results',
+            'OPD Timelines',
+            'OPD Visits',
+            'OPD Vital Information',
+        ];
+
+        foreach ($permissionsData as $roleName => $modules) {
+            if (isset($modules['IPD Patients'])) {
+                foreach ($ipdTabModules as $tab) {
+                    $permissionsData[$roleName][$tab] = $modules['IPD Patients'];
+                }
+            }
+            if (isset($modules['OPD Patients'])) {
+                foreach ($opdTabModules as $tab) {
+                    $permissionsData[$roleName][$tab] = $modules['OPD Patients'];
+                }
+            }
+        }
+
+        $moduleRoleData = [];
+
+        foreach ($permissionsData as $roleName => $modules) {
+            // Get role_id from departments table
+            $role = DB::table('departments')->where('name', $roleName)->first();
+            
+            if (!$role) {
+                continue; // Skip if role doesn't exist
+            }
+
+            foreach ($modules as $moduleName => $permissions) {
+                $moduleIds = DB::table('modules')->where('name', $moduleName)->pluck('id');
+
+                if ($moduleIds->isEmpty()) {
+                    continue;
+                }
+
+                $canAccess = in_array('view', $permissions) ? 1 : 0;
+                $canCreate = in_array('create', $permissions) ? 1 : 0;
+                $canEdit = in_array('edit', $permissions) ? 1 : 0;
+                $canDelete = in_array('delete', $permissions) ? 1 : 0;
+
+                foreach ($moduleIds as $moduleId) {
+                    $moduleRoleData[] = [
+                        'module_id' => $moduleId,
+                        'role_id' => $role->id,
+                        'can_access' => $canAccess,
+                        'can_create' => $canCreate,
+                        'can_edit' => $canEdit,
+                        'can_delete' => $canDelete,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+            }
+        }
+
+        // Insert data into module_role table
+        DB::table('module_role')->insert($moduleRoleData);
+    }
+}

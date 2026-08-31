@@ -1,0 +1,9 @@
+import 'resources/assets/theme/js/vendor.js';
+import 'resources/assets/theme/js/plugins.js';
+import   'node_modules/intl-tel-input/build/js/intlTelInput.js';
+import  'node_modules/intl-tel-input/build/js/utils.js';
+import 'public/assets/js/custom/helpers.js';
+import  'public/landing_front/js/swiper-bundle.min.js';
+import 'public/landing_front/js/jquery.toast.min.js';
+import   'public/landing_front/js/slick.min.js';
+import 'public/web_front/js/selectize.min.js';

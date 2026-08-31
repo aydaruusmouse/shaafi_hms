@@ -1,0 +1,60 @@
+header .navbar .navbar-nav .nav-item .submenu {
+    left: auto !important;
+    right: 0 !important;
+}
+
+.plan-section .pricing-plan-card .pricing-plan-features .active-check .check-box {
+    margin-left: 20px;
+}
+
+.breadcrumb-item+.breadcrumb-item {
+    padding-right: 0.5rem !important;
+    padding-left: 0;
+}
+
+.breadcrumb-item+.breadcrumb-item::before {
+    float: right !important;
+    padding-right: 0 !important;
+    padding-left: 0.5rem !important;
+}
+
+.accordion-button::after {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
+
+.iti__flag-container {
+    right: 0 !important;
+    left: auto !important;
+}
+
+.phoneNumber {
+    text-align: right;
+    padding-right: 80px !important;
+    padding-left: 6px !important;
+}
+
+.iti__country-list {
+    top: 44px !important;
+    left: auto !important;
+    right: 0 !important;
+}
+
+.iti__country {
+    text-align: right;
+    display: flex;
+}
+
+.iti__flag-box,
+.iti__country-name {
+    margin-left: 6px;
+    margin-right: 0 !important;
+}
+
+@media (min-width:992px) {
+    .hospital-sass-section .sass-left-content {
+        float: left !important;
+        margin-left: -40px !important;
+        margin-right: auto !important;
+    }
+}

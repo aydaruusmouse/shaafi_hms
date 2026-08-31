@@ -1,0 +1,13 @@
+.\[\&\:not\(\:has\(\.fi-ac-action\:focus\)\)\]\:focus-within\:ring-primary-600:focus-within:not(:has(.fi-ac-action:focus)) {
+    --tw-ring-opacity: 1;
+    --tw-ring-color: rgba(91, 102, 230, 0.85) !important;
+}
+.mt-6{
+    margin-top: 30px !important;
+}
+.mb-6{
+    margin-bottom: 30px !important;
+}
+.w-1\/2{
+    width: 28% !important;
+}

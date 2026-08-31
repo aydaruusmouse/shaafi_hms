@@ -1,0 +1,1 @@
+<x-fas-chart-pie/>

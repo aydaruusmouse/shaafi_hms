@@ -1,0 +1,120 @@
+<?php
+
+namespace App\Models;
+
+use App\Traits\PopulateTenantID;
+use Eloquent as Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Support\Carbon;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
+
+/**
+ * Class Accountant
+ *
+ * @version February 17, 2020, 5:34 am UTC
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Address $address
+ * @property-read User $user
+ *
+ * @method static Builder|Accountant newModelQuery()
+ * @method static Builder|Accountant newQuery()
+ * @method static Builder|Accountant query()
+ * @method static Builder|Accountant whereCreatedAt($value)
+ * @method static Builder|Accountant whereId($value)
+ * @method static Builder|Accountant whereUpdatedAt($value)
+ * @method static Builder|Accountant whereUserId($value)
+ *
+ * @mixin Model
+ *
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\EmployeePayroll[] $payrolls
+ * @property-read int|null $payrolls_count
+ * @property int $is_default
+ *
+ * @method static Builder|Accountant whereIsDefault($value)
+ */
+class Accountant extends Model implements HasMedia
+{
+    use BelongsToTenant, InteractsWithMedia, PopulateTenantID;
+
+    /**
+     * @var string
+     */
+    public $table = 'accountants';
+
+    /**
+     * @var array
+     */
+    public $fillable = [
+        'user_id',
+    ];
+
+    const STATUS_ALL = 2;
+
+    const ACTIVE = 1;
+
+    const INACTIVE = 0;
+
+    const STATUS_ARR = [
+        self::STATUS_ALL => 'All',
+        self::ACTIVE => 'Active',
+        self::INACTIVE => 'Deactive',
+    ];
+
+    const FILTER_STATUS_ARR = [
+        0 => 'All',
+        1 => 'Active',
+        2 => 'Deactive',
+    ];
+
+    /**
+     * Validation rules
+     *
+     * @var array
+     */
+    public static $rules = [
+        'first_name' => 'required',
+        'last_name' => 'required',
+        'email' => 'required|email:filter|unique:users,email',
+        'password' => 'nullable|same:password_confirmation|min:6',
+        'designation' => 'required|string',
+        'qualification' => 'required|string',
+        'image' => 'mimes:jpeg,png,jpg,gif,webp',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'id' => 'integer',
+            'user_id' => 'integer',
+        ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function address(): MorphOne
+    {
+        return $this->morphOne(Address::class, 'owner');
+    }
+
+    public function payrolls(): MorphMany
+    {
+        return $this->morphMany(EmployeePayroll::class, 'owner');
+    }
+}

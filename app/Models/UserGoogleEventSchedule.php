@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class UserGoogleEventSchedule extends Model
+{
+    use HasFactory;
+
+    /**
+     * @var string
+     */
+    protected $table = 'user_google_event_schedules';
+
+    /**
+     * @var string[]
+     */
+    protected $fillable = [
+        'user_id',
+        'google_live_consultation_id',
+        'google_calendar_id',
+        'google_event_id',
+        'google_meet_link',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'user_id' => 'integer',
+            'google_live_consultation_id' => 'string',
+            'google_calendar_id' => 'string',
+            'google_event_id' => 'string',
+            'google_meet_link' => 'string',
+        ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+}
