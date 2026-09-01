@@ -11,6 +11,8 @@ use App\Models\RadiologyCategory;
 use App\Models\RadiologyTest;
 use App\Models\User;
 use App\Repositories\PatientRepository;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -26,6 +28,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class RadiologyTestResource extends Resource
 {
@@ -35,7 +39,7 @@ class RadiologyTestResource extends Resource
 
     protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -236,7 +240,78 @@ class RadiologyTestResource extends Resource
                             ->readOnly(fn ($state) => $state == null ?? true),
                     ])->columns(4),
 
+                ...self::testResultsDocumentSchema(),
+
             ])->columns(1);
+    }
+
+    public static function testResultsDocumentSchema(): array
+    {
+        return [
+            Section::make(__('messages.radiology_test.test_results_document'))
+                ->description(__('messages.radiology_test.test_results_document_description'))
+                ->schema([
+                    Select::make('result_status')
+                        ->label(__('messages.radiology_test.result_status'))
+                        ->placeholder(__('messages.radiology_test.select_result_status'))
+                        ->options([
+                            RadiologyTest::RESULT_NORMAL => __('messages.radiology_test.normal'),
+                            RadiologyTest::RESULT_ABNORMAL => __('messages.radiology_test.abnormal'),
+                        ])
+                        ->required()
+                        ->native(false)
+                        ->helperText(__('messages.radiology_test.result_status_helper')),
+                    FileUpload::make('document_path')
+                        ->label(__('messages.radiology_test.upload_test_result_document'))
+                        ->acceptedFileTypes([
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        ])
+                        ->maxSize(10240)
+                        ->directory('radiology-test-documents')
+                        ->preserveFilenames()
+                        ->helperText(__('messages.radiology_test.upload_document_helper'))
+                        ->downloadable()
+                        ->previewable()
+                        ->openable()
+                        ->live()
+                        ->afterStateUpdated(function ($state, $set) {
+                            if (! $state) {
+                                return;
+                            }
+
+                            if (is_array($state)) {
+                                $state = $state[0] ?? null;
+                            }
+
+                            if (! $state) {
+                                return;
+                            }
+
+                            $name = $state instanceof TemporaryUploadedFile
+                                ? $state->getClientOriginalName()
+                                : basename((string) $state);
+
+                            if ($name) {
+                                $set('result_document_name', $name);
+                                $set('uploaded_at', now());
+                            }
+                        }),
+                    TextInput::make('result_document_name')
+                        ->label(__('messages.radiology_test.document_name'))
+                        ->disabled()
+                        ->dehydrated()
+                        ->placeholder(__('messages.radiology_test.document_name_placeholder')),
+                    DateTimePicker::make('uploaded_at')
+                        ->label(__('messages.radiology_test.uploaded_at'))
+                        ->disabled()
+                        ->dehydrated()
+                        ->placeholder(__('messages.radiology_test.document_name_placeholder')),
+                ])
+                ->collapsible()
+                ->collapsed(false),
+        ];
     }
 
     public static function table(Table $table): Table
@@ -314,6 +389,31 @@ class RadiologyTestResource extends Resource
                     ->getStateUsing(fn ($record) => $record->status ? __('messages.appointment.completed') : __('messages.appointment.pending'))
                     ->color(fn ($record) => $record->status ? 'success' : 'warning')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('result_status')
+                    ->label(__('messages.radiology_test.result_status'))
+                    ->badge()
+                    ->getStateUsing(function ($record) {
+                        return match ($record->result_status) {
+                            RadiologyTest::RESULT_NORMAL => __('messages.radiology_test.normal'),
+                            RadiologyTest::RESULT_ABNORMAL => __('messages.radiology_test.abnormal'),
+                            default => __('messages.common.n/a'),
+                        };
+                    })
+                    ->color(fn ($record) => match ($record->result_status) {
+                        RadiologyTest::RESULT_NORMAL => 'success',
+                        RadiologyTest::RESULT_ABNORMAL => 'danger',
+                        default => 'gray',
+                    })
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('result_document_name')
+                    ->label(__('messages.radiology_test.document_name'))
+                    ->limit(20)
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('uploaded_at')
+                    ->label(__('messages.radiology_test.uploaded_at'))
+                    ->dateTime('d M, Y')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('messages.common.created_at'))
                     ->dateTime('jS M, Y')
@@ -343,6 +443,23 @@ class RadiologyTestResource extends Resource
             // ->recordAction(null)
             ->actions([
                 // Tables\Actions\ViewAction::make()->color('info')->iconButton(),
+                Tables\Actions\Action::make('download_document')
+                    ->label(__('messages.document.download'))
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->visible(fn ($record) => ! empty($record->document_path))
+                    ->action(function ($record) {
+                        if (! $record->document_path || ! Storage::exists($record->document_path)) {
+                            Notification::make()
+                                ->title(__('messages.flash.radiology_test_not_found'))
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        return Storage::download($record->document_path, $record->result_document_name ?: basename($record->document_path));
+                    }),
                 Tables\Actions\Action::make('complete')
                     ->iconButton()
                     ->icon('heroicon-o-check-circle')
@@ -352,7 +469,7 @@ class RadiologyTestResource extends Resource
                     ->action(function ($record) {
                         $record->update([
                             'status' => 1,
-                            'uploaded_at' => now(),
+                            'uploaded_at' => $record->uploaded_at ?? now(),
                         ]);
 
                         Notification::make()
@@ -377,6 +494,10 @@ class RadiologyTestResource extends Resource
                             ->title(__('messages.flash.not_allow_access_record'))
                             ->danger()
                             ->send();
+                    }
+
+                    if ($record->document_path && Storage::exists($record->document_path)) {
+                        Storage::delete($record->document_path);
                     }
 
                     $record->delete();
@@ -427,6 +548,21 @@ class RadiologyTestResource extends Resource
                     ->label(__('messages.common.status').':')
                     ->badge()
                     ->getStateUsing(fn ($record) => $record->status ? __('messages.appointment.completed') : __('messages.appointment.pending')),
+                TextEntry::make('result_status')
+                    ->label(__('messages.radiology_test.result_status').':')
+                    ->badge()
+                    ->getStateUsing(fn ($record) => match ($record->result_status) {
+                        RadiologyTest::RESULT_NORMAL => __('messages.radiology_test.normal'),
+                        RadiologyTest::RESULT_ABNORMAL => __('messages.radiology_test.abnormal'),
+                        default => __('messages.common.n/a'),
+                    }),
+                TextEntry::make('result_document_name')
+                    ->label(__('messages.radiology_test.document_name').':')
+                    ->getStateUsing(fn ($record) => $record->result_document_name ?? __('messages.radiology_test.no_document_uploaded')),
+                TextEntry::make('uploaded_at')
+                    ->label(__('messages.radiology_test.uploaded_at').':')
+                    ->dateTime('d M, Y h:i A')
+                    ->placeholder(__('messages.common.n/a')),
                 TextEntry::make('created_at')
                     ->label(__('messages.common.created_at').':')
                     ->since(),
@@ -443,5 +579,14 @@ class RadiologyTestResource extends Resource
             'create' => Pages\CreateRadiologyTest::route('/create'),
             'edit' => Pages\EditRadiologyTest::route('/{record}/edit'),
         ];
+    }
+
+    public static function normalizeDocumentData(array $data): array
+    {
+        if (isset($data['document_path']) && is_array($data['document_path'])) {
+            $data['document_path'] = $data['document_path'][0] ?? null;
+        }
+
+        return $data;
     }
 }

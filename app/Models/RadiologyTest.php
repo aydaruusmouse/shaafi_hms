@@ -69,7 +69,16 @@ class RadiologyTest extends Model
         'patient_id',
         'doctor_id',
         'status',
+        'result_status',
         'uploaded_at',
+        'result_document_name',
+        'document_path',
+        'consultation_radiology_test_id',
+        'payment_status',
+        'payment_mode',
+        'paid_amount',
+        'paid_at',
+        'payment_note',
     ];
 
     /**
@@ -107,9 +116,24 @@ class RadiologyTest extends Model
             'patient_id' => 'integer',
             'doctor_id' => 'integer',
             'status' => 'integer',
+            'result_status' => 'string',
             'uploaded_at' => 'datetime',
+            'result_document_name' => 'string',
+            'document_path' => 'string',
+            'payment_status' => 'integer',
+            'payment_mode' => 'integer',
+            'paid_amount' => 'double',
+            'paid_at' => 'datetime',
         ];
     }
+
+    const RESULT_NORMAL = 'normal';
+
+    const RESULT_ABNORMAL = 'abnormal';
+
+    const PAYMENT_UNPAID = 0;
+
+    const PAYMENT_PAID = 1;
 
     public function radiologycategory(): BelongsTo
     {

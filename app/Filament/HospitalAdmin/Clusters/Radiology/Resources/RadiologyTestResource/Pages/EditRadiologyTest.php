@@ -32,8 +32,12 @@ class EditRadiologyTest extends EditRecord
             return $record;
         }
 
+        $data = RadiologyTestResource::normalizeDocumentData($data);
+
         if (($data['status'] ?? 0) == 1) {
-            $data['uploaded_at'] = $record->uploaded_at ?? now();
+            $data['uploaded_at'] = $data['uploaded_at'] ?? $record->uploaded_at ?? now();
+        } elseif (! empty($data['document_path'])) {
+            $data['uploaded_at'] = $data['uploaded_at'] ?? $record->uploaded_at ?? now();
         } else {
             $data['uploaded_at'] = null;
         }

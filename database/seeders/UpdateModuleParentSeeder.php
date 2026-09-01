@@ -85,7 +85,7 @@ class UpdateModuleParentSeeder extends Seeder
             ],
             [
                 'parent_name' => 'Radiology',
-                'child_pattern' => ['Radiology Tests', 'Radiology Categories'],
+                'child_pattern' => ['Radiology Tests', 'Radiology Categories', 'Radiology Report Payments', 'Doctor Suggested Radiology Tests'],
             ],
             [
                 'parent_name' => 'Services',

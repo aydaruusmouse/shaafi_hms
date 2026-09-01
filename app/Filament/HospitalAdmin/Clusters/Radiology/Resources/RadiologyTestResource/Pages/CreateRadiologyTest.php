@@ -24,7 +24,9 @@ class CreateRadiologyTest extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        if (($data['status'] ?? 0) == 1) {
+        $data = RadiologyTestResource::normalizeDocumentData($data);
+
+        if (empty($data['uploaded_at']) && (($data['status'] ?? 0) == 1 || ! empty($data['document_path']))) {
             $data['uploaded_at'] = now();
         }
         if (empty($data['doctor_id']) && getLoggedinDoctor()) {

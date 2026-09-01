@@ -9,13 +9,13 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class EnquiryOverview extends BaseWidget
 {
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 5;
+
+    protected int|string|array $columnSpan = 1;
 
     public static function canView(): bool
     {
-        $enriquies = Enquiry::where('status', 0)->where('tenant_id', getLoggedInUser()->tenant_id)->count();
-
-        return $enriquies > 0 && auth()->user()->hasRole('Admin');
+        return auth()->user()->hasRole('Admin');
     }
 
     public function table(Table $table): Table

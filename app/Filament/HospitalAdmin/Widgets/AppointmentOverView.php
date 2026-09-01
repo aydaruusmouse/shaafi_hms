@@ -16,13 +16,11 @@ class AppointmentOverView extends BaseWidget
 {
     protected static ?int $sort = 4;
 
+    protected int|string|array $columnSpan = 'full';
+
     public static function canView(): bool
     {
-        $now = Carbon::today();
-        $sixDays = $now->copy()->addDays(6);
-        $query = Appointment::with(['patient.user', 'doctor.user'])->whereTenantId(getLoggedInUser()->tenant_id)->whereNot('is_completed', 3)->whereBetween('opd_date', [$now, $sixDays])->select('appointments.*')->count();
-
-        return $query > 0 && auth()->user()->hasRole('Admin');
+        return auth()->user()->hasRole('Admin');
     }
 
     public function table(Table $table): Table

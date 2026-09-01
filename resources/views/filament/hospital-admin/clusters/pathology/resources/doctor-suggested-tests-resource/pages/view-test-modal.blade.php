@@ -5,9 +5,17 @@
         <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Test Information</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-500">Patient</label>
-                <p class="mt-1 text-sm text-gray-900">{{ $test->patient->user->full_name ?? 'N/A' }}</p>
-                <p class="text-xs text-gray-500">{{ $test->patient->user->email ?? '' }}</p>
+                <label class="block text-sm font-medium text-gray-500">{{ __('messages.case.patient') }}</label>
+                <p class="mt-1 text-sm text-gray-900">{{ $test->patient->user->full_name ?? __('messages.common.n/a') }}</p>
+                <p class="text-xs text-gray-500">{{ displayPatientEmail($test->patient->user->email ?? null) }}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-500">{{ __('messages.user.phone') }}</label>
+                <p class="mt-1 text-sm text-gray-900">{{ displayPatientPhone($test->patient->user ?? null) }}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-500">{{ __('messages.user.gender') }}</label>
+                <p class="mt-1 text-sm text-gray-900">{{ displayPatientGender($test->patient->user ?? null) }}</p>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-500">Test Name</label>
@@ -82,9 +90,17 @@
         <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Test Details</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div>
-                <label class="block text-sm font-medium text-gray-500">Patient</label>
-                <p class="mt-1 text-sm text-gray-900">{{ $record->patient->user->full_name ?? 'N/A' }}</p>
-                <p class="text-xs text-gray-500">{{ $record->patient->user->email ?? '' }}</p>
+                <label class="block text-sm font-medium text-gray-500">{{ __('messages.case.patient') }}</label>
+                <p class="mt-1 text-sm text-gray-900">{{ $record->patient->user->full_name ?? __('messages.common.n/a') }}</p>
+                <p class="text-xs text-gray-500">{{ displayPatientEmail($record->patient->user->email ?? null) }}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-500">{{ __('messages.user.phone') }}</label>
+                <p class="mt-1 text-sm text-gray-900">{{ displayPatientPhone($record->patient->user ?? null) }}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-500">{{ __('messages.user.gender') }}</label>
+                <p class="mt-1 text-sm text-gray-900">{{ displayPatientGender($record->patient->user ?? null) }}</p>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-500">Doctor</label>

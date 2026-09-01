@@ -358,6 +358,18 @@ class DefaultModuleSeeder extends Seeder
                 'tenant_id' => $userTenantId != null ? $userTenantId : null,
             ],
             [
+                'name' => 'Radiology Report Payments',
+                'is_active' => 1,
+                'route' => 'radiology.report.payments.index',
+                'tenant_id' => $userTenantId != null ? $userTenantId : null,
+            ],
+            [
+                'name' => 'Doctor Suggested Radiology Tests',
+                'is_active' => 1,
+                'route' => 'radiology.suggested.tests.index',
+                'tenant_id' => $userTenantId != null ? $userTenantId : null,
+            ],
+            [
                 'name' => 'Medicine Categories',
                 'is_active' => 1,
                 'route' => 'categories.index',

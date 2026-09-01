@@ -156,6 +156,8 @@ class Register extends BaseRegister
             Artisan::call('db:seed', ['--class' => 'AddSocialSettingTableSeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'DefaultModuleSeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'DefaultNewModuleSeeder', '--force' => true]);
+            Artisan::call('db:seed', ['--class' => 'PathologyPermissionModuleSeeder', '--force' => true]);
+            Artisan::call('db:seed', ['--class' => 'RadiologyPermissionModuleSeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'FrontSettingHomeTableSeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'FrontSettingTableSeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'AddAppointmentFrontSettingTableSeeder', '--force' => true]);

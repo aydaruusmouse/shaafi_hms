@@ -83,6 +83,29 @@ function displayPatientEmail(?string $email): string
     return $email;
 }
 
+function displayPatientPhone(?\App\Models\User $user): string
+{
+    if (empty($user?->phone)) {
+        return __('messages.common.n/a');
+    }
+
+    $phone = (string) $user->phone;
+    if (str_starts_with($phone, '+')) {
+        return $phone;
+    }
+
+    return ($user->region_code ?? '').$phone;
+}
+
+function displayPatientGender(?\App\Models\User $user): string
+{
+    if ($user === null || $user->gender === null) {
+        return __('messages.common.n/a');
+    }
+
+    return $user->gender_string;
+}
+
 function pdfImageToBase64(?string $url): string
 {
     if (blank($url)) {
@@ -942,7 +965,7 @@ function setPlanFeatures()
         'Inventory' => ['Issued Items', 'Item Stocks', 'Items', 'Items Categories'],
         'Vaccinations' => ['Vaccinations', 'Vaccinated Patients'],
         'SMS / Mail' => ['SMS', 'Mail'],
-        'Radiology' => ['Radiology Tests', 'Radiology Categories'],
+        'Radiology' => ['Radiology Tests', 'Radiology Categories', 'Radiology Report Payments', 'Doctor Suggested Radiology Tests'],
         'Reports' => ['Operation Reports', 'Investigation Reports', 'Death Reports', 'Birth Reports'],
         'Pathology' => ['Pathology Tests', 'Pathology Categories', 'Pathology Parameters', 'Pathology Units'],
     ];

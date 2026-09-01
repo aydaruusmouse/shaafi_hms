@@ -269,9 +269,23 @@
                                                     <p class="text-sm font-medium text-gray-900">{{ $test->radiologyTest->short_name ?? 'N/A' }}</p>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <p class="text-sm text-gray-500">Subcategory</p>
-                                                <p class="text-sm font-medium text-gray-900">{{ $test->radiologyTest->subcategory ?? 'N/A' }}</p>
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p class="text-sm text-gray-500">{{ __('messages.radiology_test.result_status') }}</p>
+                                                    <p class="text-sm font-medium text-gray-900">
+                                                        @if($test->radiologyTest->result_status === 'abnormal')
+                                                            {{ __('messages.radiology_test.abnormal') }}
+                                                        @elseif($test->radiologyTest->result_status === 'normal')
+                                                            {{ __('messages.radiology_test.normal') }}
+                                                        @else
+                                                            {{ __('messages.common.n/a') }}
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm text-gray-500">Subcategory</p>
+                                                    <p class="text-sm font-medium text-gray-900">{{ $test->radiologyTest->subcategory ?? 'N/A' }}</p>
+                                                </div>
                                             </div>
                                             <div class="grid grid-cols-2 gap-4">
                                                 <div>

@@ -87,6 +87,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UpdateModuleParentSeeder::class);
         $this->call(IpdOpdPermissionModuleSeeder::class);
         $this->call(PathologyPermissionModuleSeeder::class);
+        $this->call(RadiologyPermissionModuleSeeder::class);
         $this->call(ModuleRoleSeeder::class);
     }
 }

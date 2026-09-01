@@ -9,7 +9,9 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class NoticeBoardOverView extends BaseWidget
 {
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 5;
+
+    protected int|string|array $columnSpan = 1;
 
     public function getTableRecordsPerPageSelectOptions(): array
     {
@@ -24,9 +26,7 @@ class NoticeBoardOverView extends BaseWidget
 
     public static function canView(): bool
     {
-        $query = NoticeBoard::orderBy('id', 'DESC')->where('tenant_id', getLoggedInUser()->tenant_id)->count();
-
-        return $query > 0 && auth()->user()->hasRole('Admin');
+        return auth()->user()->hasRole('Admin');
     }
 
     public function table(Table $table): Table
