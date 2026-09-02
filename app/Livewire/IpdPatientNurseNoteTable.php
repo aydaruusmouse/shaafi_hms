@@ -55,6 +55,7 @@ class IpdPatientNurseNoteTable extends Component implements HasForms, HasTable
     public function table(Table $table): Table
     {
         return $table
+            ->heading(__('messages.ipd_patient.nurse_notes'))
             ->paginated([10, 25, 50])
             ->headerActions([
                 Actions\CreateAction::make()

@@ -117,6 +117,7 @@ class IpdPatientDepartment extends Model
         'is_discharge',
         'discharge_date',
         'discharge_summary',
+        'discharge_details',
         'custom_field',
     ];
 
@@ -140,6 +141,7 @@ class IpdPatientDepartment extends Model
             'is_old_patient' => 'boolean',
             'is_discharge' => 'boolean',
             'discharge_date' => 'datetime',
+            'discharge_details' => 'array',
             'doctor_id' => 'integer',
             'bed_type_id' => 'integer',
             'bed_id' => 'integer',

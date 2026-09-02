@@ -13,6 +13,7 @@ use App\Models\Patient;
 use App\Models\PatientCase;
 use App\Models\User;
 use App\Repositories\IpdPatientDepartmentRepository;
+use App\Support\DischargeSummaryForm;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\MultiSelect;
@@ -78,22 +79,27 @@ class IpdPatientResource extends Resource
         return false;
     }
 
+    public static function canView(Model $record): bool
+    {
+        return static::canAccessAssignedRecord($record);
+    }
+
     public static function canEdit(Model $record): bool
     {
-        if (auth()->user()->hasRole(['Admin', 'Doctor', 'Receptionist', 'Nurse']) && getModuleAccess('IPD Patients')) {
-            return true;
+        if (! auth()->user()->hasRole(['Admin', 'Doctor', 'Receptionist', 'Nurse']) || ! getModuleAccess('IPD Patients')) {
+            return false;
         }
 
-        return false;
+        return static::canAccessAssignedRecord($record);
     }
 
     public static function canDelete(Model $record): bool
     {
-        if (auth()->user()->hasRole(['Admin', 'Doctor', 'Receptionist', 'Nurse']) && getModuleAccess('IPD Patients')) {
-            return true;
+        if (! auth()->user()->hasRole(['Admin', 'Doctor', 'Receptionist', 'Nurse']) || ! getModuleAccess('IPD Patients')) {
+            return false;
         }
 
-        return false;
+        return static::canAccessAssignedRecord($record);
     }
 
     public static function canViewAny(): bool
@@ -103,6 +109,43 @@ class IpdPatientResource extends Resource
         }
 
         return false;
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return static::scopeAssignedPatientDepartmentQuery(parent::getEloquentQuery());
+    }
+
+    public static function scopeAssignedPatientDepartmentQuery(Builder $query): Builder
+    {
+        if (! auth()->check()) {
+            return $query;
+        }
+
+        $query->where('tenant_id', auth()->user()->tenant_id);
+
+        if (getLoggedinPatient()) {
+            $query->where('patient_id', auth()->user()->owner_id);
+        }
+
+        if (getLoggedinDoctor()) {
+            $query->where('doctor_id', getLoggedInDoctorId() ?: 0);
+        }
+
+        return $query;
+    }
+
+    public static function canAccessAssignedRecord(Model $record): bool
+    {
+        if (getLoggedinPatient()) {
+            return (int) $record->patient_id === (int) auth()->user()->owner_id;
+        }
+
+        if (getLoggedinDoctor()) {
+            return (int) $record->doctor_id === (int) (getLoggedInDoctorId() ?: 0);
+        }
+
+        return auth()->user()->hasRole(['Admin', 'Doctor', 'Receptionist', 'Nurse', 'Patient']);
     }
 
     public static function form(Form $form): Form
@@ -269,6 +312,9 @@ class IpdPatientResource extends Resource
 
                                 return $repo->getAssociatedData()['doctors'];
                             })
+                            ->default(fn () => getLoggedInDoctorId())
+                            ->disabled(fn () => (bool) getLoggedinDoctor())
+                            ->dehydrated()
                             ->searchable()
                             ->native(false)
                             ->preload()
@@ -361,12 +407,7 @@ class IpdPatientResource extends Resource
 
         return
             $table = $table->modifyQueryUsing(function (Builder $query) {
-                if (auth()->user()->hasRole('Patient')) {
-                    $query->whereTenantId(auth()->user()->tenant_id)->where('patient_id', auth()->user()->owner_id);
-                }
-                $query->whereTenantId(auth()->user()->tenant_id);
-
-                return $query;
+                return static::scopeAssignedPatientDepartmentQuery($query);
             })
                 ->paginated([10, 25, 50])
                 ->defaultSort('id', 'desc')
@@ -483,29 +524,10 @@ class IpdPatientResource extends Resource
                         ->icon('heroicon-o-arrow-right-start-on-rectangle')
                         ->iconButton()
                         ->color('success')
-                        ->modalHeading(__('Discharge'))
-                        ->modalWidth('lg')
-                        ->form([
-                            Section::make()
-                                ->schema([
-                                    Placeholder::make('status')
-                                        ->label(__('messages.common.status').':')
-                                        ->content(__('messages.filter.active')),
-                                    DateTimePicker::make('discharge_date')
-                                        ->label(__('messages.patient_admission.discharge_date').':')
-                                        ->native(false)
-                                        ->required()
-                                        ->default(now()),
-                                    Textarea::make('discharge_summary')
-                                        ->label(__('Discharge Summary').':')
-                                        ->rows(4)
-                                        ->required(),
-                                ]),
-                        ])
-                        ->fillForm(fn ($record) => [
-                            'discharge_date' => $record->discharge_date ?? now(),
-                            'discharge_summary' => $record->discharge_summary,
-                        ])
+                        ->modalHeading(__('messages.discharge_summary.title'))
+                        ->modalWidth('5xl')
+                        ->form(fn ($record) => DischargeSummaryForm::schema($record))
+                        ->fillForm(fn ($record) => DischargeSummaryForm::fill($record))
                         ->action(function ($record, array $data) {
                             app(IpdPatientDepartmentRepository::class)->dischargePatient($record, $data);
 

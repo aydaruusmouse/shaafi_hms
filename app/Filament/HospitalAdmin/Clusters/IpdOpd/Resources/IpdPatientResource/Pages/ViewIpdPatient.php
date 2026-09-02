@@ -10,6 +10,8 @@ use App\Livewire\IpdPatientBillSummaryTable;
 use App\Livewire\IpdPatientChargeTable;
 use App\Livewire\IpdPatientConsultantInstructionTable;
 use App\Livewire\IpdPatientDiagnosisTable;
+use App\Livewire\IpdOxygenMonitoringTable;
+use App\Livewire\IpdPatientMarTable;
 use App\Livewire\IpdPatientNurseNoteTable;
 use App\Livewire\IpdPatientOperationTable;
 use App\Livewire\IpdPatientPaymentTable;
@@ -23,6 +25,7 @@ use App\Models\OpdPatientDepartment;
 use App\Models\OpdPrescription;
 use App\Models\User;
 use App\Repositories\IpdPatientDepartmentRepository;
+use App\Support\DischargeSummaryForm;
 use Filament\Actions;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
@@ -55,29 +58,10 @@ class ViewIpdPatient extends ViewRecord
             Actions\Action::make('discharge')
                 ->label(__('messages.ipd_patient.discharged'))
                 ->color('success')
-                ->modalHeading(__('messages.ipd_patient.discharge_patient'))
-                ->modalWidth('lg')
-                ->form([
-                    FormSection::make()
-                        ->schema([
-                            Placeholder::make('status')
-                                ->label(__('messages.common.status').':')
-                                ->content(__('messages.filter.active')),
-                            DateTimePicker::make('discharge_date')
-                                ->label(__('messages.patient_admission.discharge_date').':')
-                                ->native(false)
-                                ->required()
-                                ->default(now()),
-                            Textarea::make('discharge_summary')
-                                ->label(__('messages.ipd_patient.notes').':')
-                                ->rows(4)
-                                ->required(),
-                        ]),
-                ])
-                ->fillForm(fn ($record) => [
-                    'discharge_date' => $record->discharge_date ?? now(),
-                    'discharge_summary' => $record->discharge_summary,
-                ])
+                ->modalHeading(__('messages.discharge_summary.title'))
+                ->modalWidth('5xl')
+                ->form(fn ($record) => DischargeSummaryForm::schema($record))
+                ->fillForm(fn ($record) => DischargeSummaryForm::fill($record))
                 ->action(function (IpdPatientDepartment $record, array $data) {
                     app(IpdPatientDepartmentRepository::class)->dischargePatient($record, $data);
 
@@ -230,6 +214,8 @@ class ViewIpdPatient extends ViewRecord
                                     'ipdOpdNumber' => $vitalSignNumber,
                                     'type' => 'IPD',
                                 ])->key('ipd-'.$record->id.'-vital-signs'),
+                                Livewire::make(IpdOxygenMonitoringTable::class)
+                                    ->key('ipd-'.$record->id.'-oxygen-monitoring'),
                             ]),
                         Tabs\Tab::make(__('messages.appointment.consultation'))
                             ->visible(fn () => hasModulePermission('IPD Consultation'))
@@ -300,7 +286,8 @@ class ViewIpdPatient extends ViewRecord
                             ->visible(fn () => hasModulePermission('IPD Nurse Notes'))
                             ->schema([
                                 Livewire::make(IpdPatientNurseNoteTable::class),
-                            ]),
+                                Livewire::make(IpdPatientMarTable::class),
+                            ])->columns(1),
                         Tabs\Tab::make(__('messages.payments'))
                             ->visible(fn () => hasModulePermission('IPD Payments'))
                             ->schema([
@@ -314,22 +301,10 @@ class ViewIpdPatient extends ViewRecord
                                 Group::make([]),
                                 Livewire::make(IpdPatientBillSummaryTable::class),
                             ])->columns(2),
-                        Tabs\Tab::make('Discharge')
+                        Tabs\Tab::make(__('messages.discharge_summary.title'))
                             ->icon('heroicon-o-document-text')
-                            ->schema([
-                                TextEntry::make('is_discharge')
-                                    ->label(__('messages.common.status').':')
-                                    ->badge()
-                                    ->getStateUsing(fn ($record) => $record->is_discharge ? __('messages.ipd_patient.discharged') : __('messages.filter.active'))
-                                    ->color(fn ($record) => $record->is_discharge ? 'success' : 'warning'),
-                                TextEntry::make('discharge_date')
-                                    ->label(__('messages.patient_admission.discharge_date').':')
-                                    ->formatStateUsing(fn ($record) => $record->discharge_date ? date('jS M, Y h:i A', strtotime($record->discharge_date)) : __('messages.common.n/a')),
-                                TextEntry::make('discharge_summary')
-                                    ->label(__('Discharge Summary').':')
-                                    ->formatStateUsing(fn ($record) => ! empty($record->discharge_summary) ? nl2br(e($record->discharge_summary)) : __('messages.common.n/a'))
-                                    ->html(),
-                            ])->columns(1),
+                            ->schema(DischargeSummaryForm::infolistSchema())
+                            ->columns(1),
                     ])
                     ->activeTab(1)
                     ->columnSpanFull(),

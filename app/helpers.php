@@ -929,6 +929,15 @@ function getLoggedinDoctor()
     return Auth::user()->hasRole(['Doctor']);
 }
 
+function getLoggedInDoctorId(): ?int
+{
+    if (! getLoggedinDoctor()) {
+        return null;
+    }
+
+    return \App\Models\Doctor::where('user_id', getLoggedInUserId())->value('id');
+}
+
 if (! function_exists('getGoogleJsonFilePath')) {
     function getGoogleJsonFilePath()
     {

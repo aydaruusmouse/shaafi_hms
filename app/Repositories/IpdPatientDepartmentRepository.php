@@ -259,11 +259,9 @@ class IpdPatientDepartmentRepository extends BaseRepository
 
     public function dischargePatient(IpdPatientDepartment $ipdPatientDepartment, array $data): void
     {
-        $ipdPatientDepartment->update([
+        $ipdPatientDepartment->update(array_merge([
             'is_discharge' => true,
-            'discharge_date' => $data['discharge_date'],
-            'discharge_summary' => $data['discharge_summary'] ?? null,
-        ]);
+        ], \App\Support\DischargeSummaryForm::payload($data)));
 
         BedAssign::where('ipd_patient_department_id', $ipdPatientDepartment->id)
             ->where('status', 1)

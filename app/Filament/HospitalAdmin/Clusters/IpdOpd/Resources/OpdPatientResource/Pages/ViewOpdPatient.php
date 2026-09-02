@@ -26,6 +26,7 @@ use App\Models\OpdTimeline;
 use App\Models\User;
 use App\Models\VitalSign;
 use App\Repositories\IpdPatientDepartmentRepository;
+use App\Support\DischargeSummaryForm;
 use Filament\Actions;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
@@ -125,35 +126,14 @@ class ViewOpdPatient extends ViewRecord
             Actions\Action::make('discharge')
                 ->label(__('messages.ipd_patient.discharged'))
                 ->color('success')
-                ->modalHeading(__('messages.ipd_patient.discharge_patient'))
-                ->modalWidth('lg')
-                ->form([
-                    FormSection::make()
-                        ->schema([
-                            Placeholder::make('status')
-                                ->label(__('messages.common.status').':')
-                                ->content(__('messages.filter.active')),
-                            DateTimePicker::make('discharge_date')
-                                ->label(__('messages.patient_admission.discharge_date').':')
-                                ->native(false)
-                                ->required()
-                                ->default(now()),
-                            Textarea::make('discharge_summary')
-                                ->label(__('messages.ipd_patient.notes').':')
-                                ->rows(4)
-                                ->required(),
-                        ]),
-                ])
-                ->fillForm(fn ($record) => [
-                    'discharge_date' => $record->discharge_date ?? now(),
-                    'discharge_summary' => $record->discharge_summary,
-                ])
+                ->modalHeading(__('messages.discharge_summary.title'))
+                ->modalWidth('5xl')
+                ->form(fn ($record) => DischargeSummaryForm::schema($record))
+                ->fillForm(fn ($record) => DischargeSummaryForm::fill($record))
                 ->action(function (OpdPatientDepartment $record, array $data) {
-                    $record->update([
+                    $record->update(array_merge([
                         'is_discharge' => true,
-                        'discharge_date' => $data['discharge_date'],
-                        'discharge_summary' => $data['discharge_summary'],
-                    ]);
+                    ], DischargeSummaryForm::payload($data)));
 
                     Notification::make()
                         ->title(__('messages.flash.OPD_Patient_updated') ?: 'OPD patient discharged successfully.')
@@ -600,22 +580,10 @@ class ViewOpdPatient extends ViewRecord
                                 Livewire::make(OpdPatientTimeLineTable::class)
                                     ->key('opd-'.$record->id.'-timeline'),
                             ]),
-                        Tabs\Tab::make('Discharge')
+                        Tabs\Tab::make(__('messages.discharge_summary.title'))
                             ->icon('heroicon-o-document-text')
-                            ->schema([
-                                TextEntry::make('is_discharge')
-                                    ->label(__('messages.common.status').':')
-                                    ->badge()
-                                    ->getStateUsing(fn ($record) => $record->is_discharge ? __('messages.ipd_patient.discharged') : __('messages.filter.active'))
-                                    ->color(fn ($record) => $record->is_discharge ? 'success' : 'warning'),
-                                TextEntry::make('discharge_date')
-                                    ->label(__('messages.patient_admission.discharge_date').':')
-                                    ->formatStateUsing(fn ($record) => $record->discharge_date ? date('jS M, Y h:i A', strtotime($record->discharge_date)) : __('messages.common.n/a')),
-                                TextEntry::make('discharge_summary')
-                                    ->label(__('Discharge Summary').':')
-                                    ->formatStateUsing(fn ($record) => ! empty($record->discharge_summary) ? nl2br(e($record->discharge_summary)) : __('messages.common.n/a'))
-                                    ->html(),
-                            ])->columns(1),
+                            ->schema(DischargeSummaryForm::infolistSchema())
+                            ->columns(1),
                     ])
                     ->columnSpanFull(),
             ]);
