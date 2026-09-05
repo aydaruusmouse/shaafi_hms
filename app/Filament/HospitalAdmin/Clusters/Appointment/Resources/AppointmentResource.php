@@ -8,14 +8,11 @@ use App\Filament\HospitalAdmin\Clusters\Doctors\Resources\DoctorDepartmentResour
 use App\Filament\HospitalAdmin\Clusters\Doctors\Resources\DoctorResource;
 use App\Filament\HospitalAdmin\Clusters\Patients\Resources\PatientResource;
 use App\Models\Appointment as AppointmentModel;
+use App\Support\AppointmentTickets;
 use App\Models\CustomField;
 use App\Models\Doctor;
 use App\Models\DoctorDepartment;
-use App\Models\DoctorHoliday;
-use App\Models\LunchBreak;
 use App\Models\Patient;
-use App\Models\Schedule;
-use App\Models\ScheduleDay;
 use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -25,7 +22,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -43,7 +39,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use Stevebauman\Location\Facades\Location;
 
 class AppointmentResource extends Resource
 {
@@ -212,7 +207,8 @@ class AppointmentResource extends Resource
                             ->required()
                             ->validationAttribute(__('messages.appointment.doctor_department'))
                             ->reactive()
-                            ->afterStateUpdated(function (Set $set) {
+                            ->afterStateUpdated(function (Set $set, $livewire) {
+                                AppointmentTickets::clearTicketOnDoctorOrDateChange($livewire, $set);
                                 $set('opd_date', null);
                                 $set('doctor_id', null);
                             })
@@ -242,12 +238,13 @@ class AppointmentResource extends Resource
                             ->validationAttribute(__('messages.case.doctor'))
                             ->reactive()
                             ->disabled(fn ($get) => ! $get('department_id'))
-                            ->afterStateUpdated(function (Set $set, Get $get) {
+                            ->afterStateUpdated(function (Set $set, Get $get, $livewire) {
                                 $doctorId = $get('doctor_id');
                                 if ($doctorId) {
                                     $doctor = Doctor::find($doctorId);
                                     $set('appointment_charge', $doctor->appointment_charge);
                                 }
+                                AppointmentTickets::clearTicketOnDoctorOrDateChange($livewire, $set);
                                 $set('opd_date', null);
                             })
                             ->validationMessages([
@@ -321,28 +318,8 @@ class AppointmentResource extends Resource
                             ->minDate(function () {
                                 return Carbon::now()->startOfDay()->format('Y-m-d');
                             })
-                            ->afterStateUpdated(function ($set, $get) {
-                                $doctorId = $get('doctor_id');
-                                $doctorId = $get('doctor_id');
-                                $opd_date = $get('opd_date');
-                                $date = Carbon::parse($opd_date)->format('Y-m-d');
-                                $dayName = Carbon::parse($opd_date)->format('l');
-                                $scheduleDay = ScheduleDay::where('doctor_id', $doctorId)->Where('available_on', $dayName)->get();
-                                if (isset($date)) {
-                                    $doctorHoliday = DoctorHoliday::where('doctor_id', $doctorId)->where('date', $date)->get();
-                                } else {
-                                    $doctorHoliday = DoctorHoliday::where('doctor_id', $doctorId)->get();
-                                }
-                                if ($scheduleDay->count() != 0 && $doctorHoliday->count() == 0) {
-                                    $doctorEndTime = $date.' '.$scheduleDay->first()->available_to;
-
-                                    if (Carbon::parse($doctorEndTime)->isBefore(Carbon::now())) {
-                                        Notification::make()
-                                            ->title(__('js.doctor_schedule_not_available_on_this_date'))
-                                            ->warning()
-                                            ->send();
-                                    }
-                                }
+                            ->afterStateUpdated(function ($set, $livewire) {
+                                AppointmentTickets::clearTicketOnDoctorOrDateChange($livewire, $set);
                             })
                             ->validationMessages([
                                 'required' => __('messages.fields.the').' '.__('messages.appointment.date').' '.__('messages.fields.required'),
@@ -370,170 +347,7 @@ class AppointmentResource extends Resource
                             ->validationMessages([
                                 'required' => __('messages.fields.the').' '.__('messages.ipd_payments.payment_mode').' '.__('messages.fields.required'),
                             ]),
-                        ToggleButtons::make('time')
-                            ->label(__('messages.available_slots').':')
-                            ->visibleOn('create')
-                            ->inline()
-                            ->extraAttributes(['class' => 'booked-appointment-slot'])
-                            ->live()
-                            ->afterStateHydrated(fn ($component, $record, $operation) => $operation == 'edit' ? $component->state($record->opd_date ? \Carbon\Carbon::parse($record->opd_date)->format('H:i') : null) : null)
-                            ->options(function (Get $get) {
-                                $position = Location::get(request()->ip());
-                                $timezone = $position && $position->timezone ? $position->timezone : config('app.timezone');
-                                $doctorId = $get('doctor_id');
-                                $opd_date = $get('opd_date');
-                                $date = Carbon::parse($opd_date)->format('Y-m-d');
-                                $dayName = Carbon::parse($opd_date)->format('l');
-                                $scheduleDay = ScheduleDay::where('doctor_id', $doctorId)->Where('available_on', $dayName)->get();
-                                $perPatientTime = Schedule::whereDoctorId($doctorId)->first();
-                                if (isset($date)) {
-                                    $doctorHoliday = DoctorHoliday::where('doctor_id', $doctorId)->where('date', $date)->get();
-                                    $doctorBreak = LunchBreak::where('doctor_id', $doctorId)->get();
-                                } else {
-                                    $doctorHoliday = DoctorHoliday::where('doctor_id', $doctorId)->get();
-                                    $doctorBreak = LunchBreak::where('doctor_id', $doctorId)->get();
-                                }
-                                if ($scheduleDay->count() != 0 && $doctorHoliday->count() == 0) {
-
-                                    $availableFrom = '';
-
-                                    if (Carbon::now()->format('Y-m-d') === $date) {
-                                        $time = Carbon::parse($perPatientTime->per_patient_time);
-                                        $totalMinutes = $time->hour * 60 + $time->minute;
-                                        $totaltime = $totalMinutes.' minutes';
-                                        $startTime = $scheduleDay->first()->available_from;
-                                        $endTime = $scheduleDay->first()->available_to;
-                                        $currentTime = Carbon::now($timezone);
-                                        if ($currentTime->between($startTime, $endTime)) {
-                                            $availableFrom = $currentTime->addMinutes($perPatientTime->per_patient_time)->ceil($totaltime)->format('H:i:s');
-
-                                            if (Carbon::parse($availableFrom)->greaterThan($endTime)) {
-                                                $availableFrom = $endTime;
-                                            }
-                                        } else {
-                                            $availableFrom = $startTime;
-                                        }
-                                    } else {
-                                        $availableFrom = $scheduleDay->first()->available_from;
-                                    }
-
-                                    $doctorStartTime = $date.' '.$availableFrom;
-                                    $doctorEndTime = $date.' '.$scheduleDay->first()->available_to;
-
-                                    if (Carbon::parse($doctorEndTime)->isBefore(Carbon::now())) {
-                                        // Notification::make()
-                                        //     ->title(__('js.doctor_schedule_not_available_on_this_date'))
-                                        //     ->warning()
-                                        //     ->send();
-                                        return [];
-                                    }
-
-                                    $doctorPatientTime = $perPatientTime->per_patient_time;
-                                    $timeParts = explode(':', $doctorPatientTime);
-                                    $minutes = ($timeParts[0] * 60) + $timeParts[1];
-                                    $startTime = Carbon::now()->setHours((int) substr($doctorStartTime, 11, 2))
-                                        ->setMinutes((int) substr($doctorStartTime, 14, 2));
-
-                                    $endTime = Carbon::now()->setHours((int) substr($doctorEndTime, 11, 2))
-                                        ->setMinutes((int) substr($doctorEndTime, 14, 2));
-
-                                    $appointmentIntervals = [];
-                                    while ($startTime < $endTime) {
-                                        $appointmentIntervals[] = $startTime->format('H:i');
-                                        $startTime->addMinutes($minutes);
-                                    }
-
-                                    if (! empty($doctorBreak)) {
-
-                                        foreach ($doctorBreak as $break) {
-                                            if ($break->every_day == 1) {
-
-                                                $startBreakTime = Carbon::parse($date.' '.$break->break_from);
-                                                $endBreakTime = Carbon::parse($date.' '.$break->break_to);
-
-                                                $appointmentBreakIntervals = [];
-                                                while ($startBreakTime < $endBreakTime) {
-                                                    $appointmentBreakIntervals[] = $startBreakTime->format('H:i');
-                                                    $startBreakTime->addMinutes(1);
-                                                }
-
-                                                // ??
-                                                $appointmentIntervals = array_filter($appointmentIntervals, function ($slot) use ($appointmentBreakIntervals) {
-                                                    return ! in_array($slot, $appointmentBreakIntervals);
-                                                });
-                                            } else {
-                                                if ($break->date == $date) {
-                                                    $startBreakTime = Carbon::parse($date.' '.$break->break_from);
-                                                    $endBreakTime = Carbon::parse($date.' '.$break->break_to);
-
-                                                    $appointmentBreakIntervals = [];
-                                                    while ($startBreakTime < $endBreakTime) {
-                                                        $appointmentBreakIntervals[] = $startBreakTime->format('H:i');
-                                                        $startBreakTime->addMinutes(1);
-                                                    }
-
-                                                    // ??
-                                                    $appointmentIntervals = array_filter($appointmentIntervals, function ($slot) use ($appointmentBreakIntervals) {
-                                                        return ! in_array($slot, $appointmentBreakIntervals);
-                                                    });
-                                                }
-                                            }
-                                        }
-                                    }
-                                    if (count($appointmentIntervals) > 0) {
-                                        $timeSlots = [];
-                                        foreach ($appointmentIntervals as $timeSlot) {
-                                            $timeSlots[$timeSlot] = $timeSlot;
-                                        }
-
-                                        $availableTo = $scheduleDay->first()->available_to;
-
-                                        $scheduleTimeHtml = $dayName.'['.$availableFrom.' - '.$availableTo.']';
-
-                                        echo '<div class="schedule-time text-sm font-medium leading-6 text-gray-950 w-full dark:text-white">'.$scheduleTimeHtml.'</div>';
-
-                                        return $timeSlots;
-                                    }
-
-                                    if ($availableFrom != '00:00:00' && $scheduleDay->first()->available_to != '00:00:00' && $doctorStartTime != $doctorEndTime) {
-                                        // ??
-                                    } else {
-                                        Notification::make()
-                                            ->title(__('messages.appointment.doctor_schedule_not_available_on_this_date'))
-                                            ->warning()
-                                            ->send();
-
-                                        return [];
-                                    }
-                                } else {
-                                    Notification::make()
-                                        ->title(__('messages.appointment.doctor_schedule_not_available_on_this_date'))
-                                        ->warning()
-                                        ->send();
-
-                                    return [];
-                                }
-                            })
-                            ->visible(function (Get $get) {
-                                return $get('opd_date') != null;
-                            })
-                            ->disableOptionWhen(function ($value, Get $get) {
-                                $doctorId = $get('doctor_id');
-                                $opd_date = $get('opd_date');
-                                $date = Carbon::parse($opd_date)->format('Y-m-d');
-
-                                $bookedAppointments = AppointmentModel::where('doctor_id', $doctorId)
-                                    ->whereDate('opd_date', $date)
-                                    ->pluck('opd_date')
-                                    ->map(function ($appointment) {
-                                        return Carbon::parse($appointment)->format('H:i'); // Format as H:i (hours:minutes)
-                                    })
-                                    ->toArray();
-
-                                return in_array($value, $bookedAppointments);
-                            })
-                            ->required()
-                            ->validationAttribute(__('messages.available_slots').':'),
+                        AppointmentTickets::ticketPickerField(),
                     ])->columns(2),
                 Section::make('')
                     ->hidden(empty($customFieldComponents))
@@ -561,7 +375,11 @@ class AppointmentResource extends Resource
                 TextEntry::make('doctor.user.full_name')
                     ->label(__('messages.case.doctor').':'),
                 TextEntry::make('opd_date')
-                    ->label(__('messages.appointment.date').':'),
+                    ->label(__('messages.appointment.date').':')
+                    ->formatStateUsing(fn ($state, $record) => AppointmentTickets::bookingLabel($state, $record->ticket_number)),
+                TextEntry::make('ticket_number')
+                    ->label(__('messages.appointment.ticket').':')
+                    ->formatStateUsing(fn ($state) => $state ? __('messages.appointment.ticket_n', ['number' => $state]) : __('messages.common.n/a')),
                 TextEntry::make('is_completed')
                     ->label(__('messages.common.status').':')
                     ->formatStateUsing(function ($state) {
@@ -580,7 +398,7 @@ class AppointmentResource extends Resource
             abort(404);
         }
         $table = $table->modifyQueryUsing(function ($query) {
-            $query->where('tenant_id', auth()->user()->tenant_id)->where('id', '!=', auth()->user()->id)->whereNotIn('is_completed', [AppointmentModel::STATUS_IN_QUEUE, AppointmentModel::STATUS_CHECK_IN, AppointmentModel::STATUS_IN_VITAL]);
+            $query->where('tenant_id', auth()->user()->tenant_id);
 
             if (! getLoggedinDoctor()) {
                 if (getLoggedinPatient()) {
@@ -673,13 +491,22 @@ class AppointmentResource extends Resource
                     )
                     ->html()
                     ->searchable(),
+                TextColumn::make('ticket_number')
+                    ->label(__('messages.appointment.ticket'))
+                    ->formatStateUsing(fn ($state) => $state ? __('messages.appointment.ticket_n', ['number' => $state]) : __('messages.common.n/a'))
+                    ->sortable(),
                 TextColumn::make('opd_date')
                     ->label(__('messages.appointment.date'))
                     ->searchable()
                     ->sortable()
-                    ->formatStateUsing(
-                        fn ($state) => '<div class="text-center">'.Carbon::parse($state)->format('g:i A').'</div>'.Carbon::parse($state)->format('jS M, Y')
-                    )
+                    ->formatStateUsing(function ($state, $record) {
+                        $date = Carbon::parse($state)->format('jS M, Y');
+                        $ticket = $record->ticket_number
+                            ? ' · '.__('messages.appointment.ticket_n', ['number' => $record->ticket_number])
+                            : '';
+
+                        return '<div class="text-center">'.$date.$ticket.'</div>';
+                    })
                     ->badge()
                     ->html(),
                 TextColumn::make('is_completed')

@@ -12,6 +12,8 @@ use App\Models\User;
 use App\Models\UserTenant;
 use App\Repositories\AppointmentRepository;
 use App\Repositories\AppointmentTransactionRepository;
+use App\Filament\HospitalAdmin\Clusters\Appointment\Concerns\HandlesAppointmentTicketSelection;
+use App\Support\AppointmentTickets;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -22,6 +24,8 @@ use Illuminate\Support\Facades\Mail;
 
 class CreateAppointment extends CreateRecord
 {
+    use HandlesAppointmentTicketSelection;
+
     protected static string $resource = AppointmentResource::class;
 
     protected static bool $canCreateAnother = false;
@@ -53,8 +57,17 @@ class CreateAppointment extends CreateRecord
 
         $appointmentTransactionRepository = app(AppointmentTransactionRepository::class);
 
-        $input['opd_date'] = $input['opd_date'].' '.$input['time'];
+        if ($error = AppointmentTickets::validateSelection($input)) {
+            Notification::make()
+                ->danger()
+                ->title($error)
+                ->send();
+            $this->halt();
+        }
+
+        $input = AppointmentTickets::normalize($input);
         $input['payment_type'] = $input['payment_type'] ?? 4;
+        $input['tenant_id'] = getLoggedInUser()->tenant_id;
         $appointmentRepository = app(AppointmentRepository::class);
 
         // $input['is_completed'] = $input['is_completed'] == 1 ? Appointment::STATUS_COMPLETED : Appointment::STATUS_PENDING;
@@ -164,7 +177,7 @@ class CreateAppointment extends CreateRecord
             $patient = Patient::whereId($input['patient_id'])->first();
 
             $mailData = [
-                'booking_date' => Carbon::parse($input['opd_date'])->translatedFormat('g:i A').' '.Carbon::parse($input['opd_date'])->translatedFormat('jS M, Y'),
+                'booking_date' => AppointmentTickets::bookingLabel($input['opd_date'], $input['ticket_number'] ?? null),
                 'patient_name' => $patient->user->full_name,
                 'patient_email' => $patient->user->email,
                 'doctor_name' => $doctor->user->full_name,

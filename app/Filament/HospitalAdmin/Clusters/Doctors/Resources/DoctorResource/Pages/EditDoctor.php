@@ -67,10 +67,25 @@ class EditDoctor extends EditRecord
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
+        if (! empty($data['ticket_count'])) {
+            $error = \App\Support\AppointmentTickets::validateCapacityChange($record->id, (int) $data['ticket_count']);
+            if ($error) {
+                Notification::make()
+                    ->danger()
+                    ->title($error)
+                    ->send();
+                $this->halt();
+            }
+        }
+
         $data['region_code'] = ! empty($data['phone']) ? getRegionCode($data['region_code'] ?? '') : null;
         $data['phone'] = getPhoneNumber($data['phone']);
 
         $doctor = app(DoctorRepository::class)->update($record, $data);
+
+        if (! empty($data['ticket_count'])) {
+            \App\Support\AppointmentTickets::syncDoctorCapacity($record->id, (int) $data['ticket_count']);
+        }
 
         return $doctor;
     }

@@ -123,6 +123,7 @@ class Appointment extends Model
         'doctor_id',
         'department_id',
         'opd_date',
+        'ticket_number',
         'problem',
         'is_completed',
         'tenant_id',

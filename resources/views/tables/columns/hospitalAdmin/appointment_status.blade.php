@@ -17,6 +17,12 @@
         @elseif ($getRecord()->is_completed == 4)
             <x-filament::badge
             color="info">{{ __('In Queue') }}</x-filament::badge>
+        @elseif ($getRecord()->is_completed == 5)
+            <x-filament::badge
+            color="primary">{{ __('messages.appointment.check_in') }}</x-filament::badge>
+        @elseif ($getRecord()->is_completed == 9)
+            <x-filament::badge
+            color="warning">{{ __('messages.appointment.in_vital') }}</x-filament::badge>
         @endif
     @endif
 @endif

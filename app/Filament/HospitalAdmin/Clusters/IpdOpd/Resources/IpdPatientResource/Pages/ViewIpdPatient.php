@@ -217,13 +217,12 @@ class ViewIpdPatient extends ViewRecord
                                 Livewire::make(IpdOxygenMonitoringTable::class)
                                     ->key('ipd-'.$record->id.'-oxygen-monitoring'),
                             ]),
-                        Tabs\Tab::make(__('messages.appointment.consultation'))
-                            ->visible(fn () => hasModulePermission('IPD Consultation'))
+                        Tabs\Tab::make(__('messages.ipd_patient.nurse_notes'))
+                            ->visible(fn () => hasModulePermission('IPD Nurse Notes'))
                             ->schema([
-                                Livewire::make(OpdPatientConsultationTable::class, [
-                                    'departmentType' => 'IPD',
-                                ])->key('ipd-'.$record->id.'-consultation'),
-                            ]),
+                                Livewire::make(IpdPatientNurseNoteTable::class),
+                                Livewire::make(IpdPatientMarTable::class),
+                            ])->columns(1),
                         Tabs\Tab::make(__('messages.appointment.test_results'))
                             ->visible(fn () => hasModulePermission('IPD Test Results'))
                             ->badge(function () use ($record) {
@@ -257,37 +256,38 @@ class ViewIpdPatient extends ViewRecord
                             ->schema([
                                 Livewire::make(IpdPatientDiagnosisTable::class),
                             ]),
+                        Tabs\Tab::make(__('messages.appointment.consultation'))
+                            ->visible(fn () => hasModulePermission('IPD Consultation'))
+                            ->schema([
+                                Livewire::make(OpdPatientConsultationTable::class, [
+                                    'departmentType' => 'IPD',
+                                ])->key('ipd-'.$record->id.'-consultation'),
+                            ]),
                         Tabs\Tab::make(__('messages.ipd_consultant_register'))
                             ->visible(fn () => hasModulePermission('IPD Consultant Instruction'))
                             ->schema([
                                 Livewire::make(IpdPatientConsultantInstructionTable::class),
-                            ]),
-                        Tabs\Tab::make(__('messages.charges'))
-                            ->visible(fn () => hasModulePermission('IPD Charges'))
-                            ->schema([
-                                Livewire::make(IpdPatientChargeTable::class),
                             ]),
                         Tabs\Tab::make(__('messages.prescriptions'))
                             ->visible(fn () => hasModulePermission('IPD Prescriptions'))
                             ->schema([
                                 Livewire::make(IpdPatientPrescriptionTable::class),
                             ]),
-                        Tabs\Tab::make(__('messages.ipd_timelines'))
-                            ->visible(fn () => hasModulePermission('IPD Timelines'))
-                            ->schema([
-                                Livewire::make(IpdPatientTimeLineTable::class),
-                            ]),
                         Tabs\Tab::make(__('messages.ipd_patient.operations'))
                             ->visible(fn () => hasModulePermission('IPD Operations'))
                             ->schema([
                                 Livewire::make(IpdPatientOperationTable::class),
                             ]),
-                        Tabs\Tab::make(__('messages.ipd_patient.nurse_notes'))
-                            ->visible(fn () => hasModulePermission('IPD Nurse Notes'))
+                        Tabs\Tab::make(__('messages.ipd_timelines'))
+                            ->visible(fn () => hasModulePermission('IPD Timelines'))
                             ->schema([
-                                Livewire::make(IpdPatientNurseNoteTable::class),
-                                Livewire::make(IpdPatientMarTable::class),
-                            ])->columns(1),
+                                Livewire::make(IpdPatientTimeLineTable::class),
+                            ]),
+                        Tabs\Tab::make(__('messages.charges'))
+                            ->visible(fn () => hasModulePermission('IPD Charges'))
+                            ->schema([
+                                Livewire::make(IpdPatientChargeTable::class),
+                            ]),
                         Tabs\Tab::make(__('messages.payments'))
                             ->visible(fn () => hasModulePermission('IPD Payments'))
                             ->schema([

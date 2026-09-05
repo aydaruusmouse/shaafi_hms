@@ -41,7 +41,7 @@ class IpdPatientMarTable extends Component implements HasForms, HasTable
             Hidden::make('ipd_prescription_item_id')->dehydrated(),
             Hidden::make('medicine_name')->dehydrated(),
             Select::make('medicine_id')
-                ->label(__('messages.medicine.medicine'))
+                ->label(__('messages.ipd_patient_mar.medications'))
                 ->options(fn () => $this->medicineOptions())
                 ->searchable()
                 ->preload()
@@ -59,18 +59,16 @@ class IpdPatientMarTable extends Component implements HasForms, HasTable
             TextInput::make('dosage')
                 ->label(__('messages.ipd_patient_prescription.dosage'))
                 ->maxLength(255),
+            Select::make('route')
+                ->label(__('messages.ipd_patient_mar.route'))
+                ->options(IpdMedicationAdministration::routeOptions())
+                ->searchable()
+                ->native(false)
+                ->placeholder(__('messages.ipd_patient_mar.route')),
             DateTimePicker::make('given_at')
                 ->label(__('messages.ipd_patient_mar.given_at'))
                 ->native(false)
                 ->default(now())
-                ->required(),
-            Select::make('nurse_id')
-                ->label(__('messages.ipd_patient_nurse_note.nurse'))
-                ->options(fn () => getNurseSelectOptions())
-                ->searchable()
-                ->preload()
-                ->native(false)
-                ->default(fn () => auth()->user()?->hasRole('Nurse') ? auth()->user()->owner_id : null)
                 ->required(),
             Select::make('status')
                 ->label(__('messages.common.status'))
@@ -78,9 +76,18 @@ class IpdPatientMarTable extends Component implements HasForms, HasTable
                 ->default(IpdMedicationAdministration::STATUS_GIVEN)
                 ->native(false)
                 ->required(),
+            Select::make('nurse_id')
+                ->label(__('messages.ipd_patient_mar.nurse_name'))
+                ->options(fn () => getNurseSelectOptions())
+                ->searchable()
+                ->preload()
+                ->native(false)
+                ->default(fn () => auth()->user()?->hasRole('Nurse') ? auth()->user()->owner_id : null)
+                ->required(),
             Textarea::make('notes')
                 ->label(__('messages.ipd_patient_mar.notes'))
-                ->rows(2),
+                ->rows(2)
+                ->columnSpanFull(),
         ];
     }
 
@@ -103,17 +110,21 @@ class IpdPatientMarTable extends Component implements HasForms, HasTable
             ])
             ->query(IpdMedicationAdministration::query()->where('ipd_patient_department_id', $this->id)->orderByDesc('given_at')->orderByDesc('id'))
             ->columns([
-                TextColumn::make('given_at')
-                    ->label(__('messages.ipd_patient_mar.given_at'))
-                    ->formatStateUsing(fn ($state) => $state ? \Carbon\Carbon::parse($state)->translatedFormat('jS M, Y h:i A') : __('messages.common.n/a'))
-                    ->sortable(),
                 TextColumn::make('medicine_name')
-                    ->label(__('messages.medicine.medicine'))
+                    ->label(__('messages.ipd_patient_mar.medications'))
                     ->getStateUsing(fn ($record) => $record->medicine_name ?: ($record->medicine->name ?? __('messages.common.n/a')))
                     ->searchable(),
                 TextColumn::make('dosage')
                     ->label(__('messages.ipd_patient_prescription.dosage'))
                     ->default(__('messages.common.n/a')),
+                TextColumn::make('route')
+                    ->label(__('messages.ipd_patient_mar.route'))
+                    ->formatStateUsing(fn ($state) => IpdMedicationAdministration::routeOptions()[$state] ?? ($state ?: __('messages.common.n/a')))
+                    ->default(__('messages.common.n/a')),
+                TextColumn::make('given_at')
+                    ->label(__('messages.ipd_patient_mar.given_at'))
+                    ->formatStateUsing(fn ($state) => $state ? \Carbon\Carbon::parse($state)->translatedFormat('jS M, Y h:i A') : __('messages.common.n/a'))
+                    ->sortable(),
                 TextColumn::make('status')
                     ->label(__('messages.common.status'))
                     ->badge()
@@ -125,7 +136,7 @@ class IpdPatientMarTable extends Component implements HasForms, HasTable
                         default => 'gray',
                     }),
                 TextColumn::make('nurse.user.full_name')
-                    ->label(__('messages.ipd_patient_nurse_note.nurse'))
+                    ->label(__('messages.ipd_patient_mar.nurse_name'))
                     ->default(__('messages.common.n/a'))
                     ->searchable(),
                 TextColumn::make('notes')

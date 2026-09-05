@@ -73,6 +73,7 @@ class Doctor extends Model implements HasMedia
         'specialist',
         'description',
         'appointment_charge',
+        'ticket_count',
         'google_json_file_path',
     ];
 

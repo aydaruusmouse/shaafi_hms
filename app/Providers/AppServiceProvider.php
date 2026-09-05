@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Appointment;
+use App\Observers\AppointmentObserver;
 use App\Rules\ValidRecaptcha;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
@@ -46,6 +48,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Appointment::observe(AppointmentObserver::class);
+
         Event::listen([
             TwoFactorAuthenticationChallenged::class,
             TwoFactorAuthenticationEnabled::class

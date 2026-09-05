@@ -58,7 +58,7 @@ class DoctorRepository extends BaseRepository
             if (! empty(getSuperAdminSettingValue()['default_language']->value)) {
                 $input['language'] = getSuperAdminSettingValue()['default_language']->value;
             }
-            $user = User::create(Arr::except($input, ['specialist', 'doctor_department_id']));
+            $user = User::create(Arr::except($input, ['specialist', 'doctor_department_id', 'ticket_count']));
             if ($mail) {
                 $user->sendEmailVerificationNotification();
             }
@@ -73,6 +73,7 @@ class DoctorRepository extends BaseRepository
                 'specialist' => $input['specialist'],
                 'description' => $input['description'],
                 'appointment_charge' => $input['appointment_charge'] ?? 0,
+                'ticket_count' => $input['ticket_count'] ?? 20,
             ]);
             $schedule = Schedule::create([
                 'doctor_id' => $doctor->id,

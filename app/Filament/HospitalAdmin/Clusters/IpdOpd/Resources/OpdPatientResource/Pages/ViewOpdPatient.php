@@ -525,12 +525,6 @@ class ViewOpdPatient extends ViewRecord
                                     ]
                                 )->key('opd-'.$record->id.'-vital-signs'),
                             ]),
-                        Tabs\Tab::make(__('messages.appointment.consultation'))
-                            ->visible(fn () => hasModulePermission('OPD Consultation'))
-                            ->schema([
-                                Livewire::make(OpdPatientConsultationTable::class)
-                                    ->key('opd-'.$record->id.'-consultation'),
-                            ]),
                         Tabs\Tab::make(__('messages.appointment.test_results'))
                             ->visible(fn () => hasModulePermission('OPD Test Results'))
                             ->badge(function () use ($record) {
@@ -556,23 +550,23 @@ class ViewOpdPatient extends ViewRecord
                                         ];
                                     }),
                             ]),
-                        Tabs\Tab::make(__('messages.prescriptions'))
-                            ->visible(fn () => hasModulePermission('OPD Prescriptions'))
-                            ->schema([
-                                Livewire::make(OpdPatientPrescriptionTable::class)
-                                    ->key('opd-'.$record->id.'-prescriptions'),
-                            ]),
                         Tabs\Tab::make(__('messages.ipd_diagnosis'))
                             ->visible(fn () => hasModulePermission('OPD Diagnosis'))
                             ->schema([
                                 Livewire::make(OpdPatientDiagnosisTable::class)
                                     ->key('opd-'.$record->id.'-diagnosis'),
                             ]),
-                        Tabs\Tab::make(__('messages.opd_patient.visits'))
-                            ->visible(fn () => hasModulePermission('OPD Visits'))
+                        Tabs\Tab::make(__('messages.appointment.consultation'))
+                            ->visible(fn () => hasModulePermission('OPD Consultation'))
                             ->schema([
-                                Livewire::make(OpdPatientVisitTable::class)
-                                    ->key('opd-'.$record->id.'-visits'),
+                                Livewire::make(OpdPatientConsultationTable::class)
+                                    ->key('opd-'.$record->id.'-consultation'),
+                            ]),
+                        Tabs\Tab::make(__('messages.prescriptions'))
+                            ->visible(fn () => hasModulePermission('OPD Prescriptions'))
+                            ->schema([
+                                Livewire::make(OpdPatientPrescriptionTable::class)
+                                    ->key('opd-'.$record->id.'-prescriptions'),
                             ]),
                         Tabs\Tab::make(__('messages.ipd_timelines'))
                             ->visible(fn () => hasModulePermission('OPD Timelines'))
@@ -580,11 +574,18 @@ class ViewOpdPatient extends ViewRecord
                                 Livewire::make(OpdPatientTimeLineTable::class)
                                     ->key('opd-'.$record->id.'-timeline'),
                             ]),
+                        Tabs\Tab::make(__('messages.opd_patient.visits'))
+                            ->visible(fn () => hasModulePermission('OPD Visits'))
+                            ->schema([
+                                Livewire::make(OpdPatientVisitTable::class)
+                                    ->key('opd-'.$record->id.'-visits'),
+                            ]),
                         Tabs\Tab::make(__('messages.discharge_summary.title'))
                             ->icon('heroicon-o-document-text')
                             ->schema(DischargeSummaryForm::infolistSchema())
                             ->columns(1),
                     ])
+                    ->activeTab(1)
                     ->columnSpanFull(),
             ]);
     }

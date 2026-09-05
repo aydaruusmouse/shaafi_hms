@@ -27,6 +27,7 @@ class IpdMedicationAdministration extends Model
         'medicine_id',
         'medicine_name',
         'dosage',
+        'route',
         'given_at',
         'nurse_id',
         'status',
@@ -48,6 +49,20 @@ class IpdMedicationAdministration extends Model
             self::STATUS_HELD => __('messages.ipd_patient_mar.held'),
             self::STATUS_REFUSED => __('messages.ipd_patient_mar.refused'),
             self::STATUS_MISSED => __('messages.ipd_patient_mar.missed'),
+        ];
+    }
+
+    public static function routeOptions(): array
+    {
+        return [
+            'iv' => __('messages.ipd_patient_mar.route_iv'),
+            'im' => __('messages.ipd_patient_mar.route_im'),
+            'sc' => __('messages.ipd_patient_mar.route_sc'),
+            'po' => __('messages.ipd_patient_mar.route_po'),
+            'sl' => __('messages.ipd_patient_mar.route_sl'),
+            'topical' => __('messages.ipd_patient_mar.route_topical'),
+            'inhalation' => __('messages.ipd_patient_mar.route_inhalation'),
+            'other' => __('messages.ipd_patient_mar.route_other'),
         ];
     }
 

@@ -227,6 +227,14 @@ class DoctorResource extends Resource
                             ->placeholder(__('messages.appointment_charge'))
                             ->numeric()
                             ->minValue(0),
+                        TextInput::make('ticket_count')
+                            ->label(__('messages.appointment.ticket_count').':')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(200)
+                            ->default(20)
+                            ->required()
+                            ->validationAttribute(__('messages.appointment.ticket_count')),
                         Group::make()->schema([
                             Forms\Components\TextInput::make('password')
                                 ->revealable()
